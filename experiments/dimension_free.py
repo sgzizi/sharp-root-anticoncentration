@@ -127,10 +127,20 @@ def main() -> None:
     axis.margins(x=0.04, y=0.20)
 
     for suffix in ("pdf", "png"):
+        metadata = (
+            {
+                "Creator": "sharp-root-anticoncentration artifact",
+                "CreationDate": None,
+                "ModDate": None,
+            }
+            if suffix == "pdf"
+            else None
+        )
         fig.savefig(
             args.figures_dir / f"dimension_free.{suffix}",
             dpi=240 if suffix == "png" else None,
             bbox_inches="tight",
+            metadata=metadata,
         )
     plt.close(fig)
 

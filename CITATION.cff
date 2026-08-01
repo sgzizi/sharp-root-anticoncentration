@@ -7,7 +7,26 @@ date-released: 2026-08-01
 authors:
   - family-names: Wang
     given-names: Zijun
+    affiliation: Northeastern University, China
+    email: wangzj@mails.neu.edu.cn
   - family-names: Miao
     given-names: Yuchen
+    affiliation: Northeastern University, China
+    email: miaoyc@mails.neu.edu.cn
+keywords:
+  - anti-concentration
+  - online learning
+  - random polynomials
+  - graph learning
+  - reproducible research
 license: MIT
 repository-code: "https://github.com/sgzizi/sharp-root-anticoncentration"
+preferred-citation:
+  type: article
+  title: "Sharp Root Anti-Concentration via Projective Incidence and Ordered Root Laws"
+  authors:
+    - family-names: Wang
+      given-names: Zijun
+    - family-names: Miao
+      given-names: Yuchen
+  year: 2026

@@ -48,6 +48,79 @@ class BaseInstance:
     unlabeled: np.ndarray
 
 
+@dataclass(frozen=True)
+class TransitionSelection:
+    round_index: int
+    local_vertex: int
+    maximum_sampled_sign_changes: int
+    selected_sampled_sign_changes: int
+    rule: str
+
+
+GRID_REGRET_LABEL = "Regret to algorithm grid (exact)"
+DENSE_PROXY_LABEL = "Dense-plus-algorithm-grid finite proxy"
+CI_METHOD = "pointwise normal approximation: mean +/- 1.96 sample standard errors"
+CI_CONDITIONING = "conditional on the fixed oblivious base-instance sequence"
+CI_RANDOMNESS = "independent cost pairs and Hedge actions"
+TRANSITION_LOCATION_METHOD = (
+    "bisection of the harmonic margin within adjacent dense-grid sign-change brackets"
+)
+
+
+def select_illustrative_transition(
+    margins: np.ndarray,
+    gammas: np.ndarray,
+) -> TransitionSelection:
+    """Apply and report the deterministic illustrative-curve selection rule."""
+
+    if gammas.ndim != 1 or gammas.size < 2 or np.any(np.diff(gammas) <= 0.0):
+        raise ValueError("gammas must be a strictly increasing one-dimensional grid")
+    if (
+        margins.ndim != 3
+        or margins.shape[0] == 0
+        or margins.shape[1] != gammas.size
+        or margins.shape[2] == 0
+    ):
+        raise ValueError("margins must have shape (round, gamma, vertex)")
+    sign_changes = np.sum(margins[:, :-1, :] * margins[:, 1:, :] < 0.0, axis=1)
+    maximum_changes = int(np.max(sign_changes))
+    if maximum_changes > 0:
+        midpoint = 0.5 * (gammas[0] + gammas[-1])
+        candidates = np.argwhere(sign_changes == maximum_changes)
+
+        def centrality(candidate: np.ndarray) -> float:
+            t, vertex = (int(candidate[0]), int(candidate[1]))
+            changes = np.flatnonzero(
+                margins[t, :-1, vertex] * margins[t, 1:, vertex] < 0.0
+            )
+            approximate_crossings = 0.5 * (gammas[changes] + gammas[changes + 1])
+            return float(np.min(np.abs(approximate_crossings - midpoint)))
+
+        round_index, local_vertex = map(int, min(candidates, key=centrality))
+        rule = (
+            "maximize sampled sign changes over all round-vertex curves; "
+            "break ties by the crossing nearest the parameter-interval midpoint, "
+            "then by round and local-vertex index"
+        )
+    else:
+        closest = np.min(np.abs(margins), axis=1)
+        flat_index = int(np.argmin(closest))
+        round_index, local_vertex = map(
+            int, np.unravel_index(flat_index, closest.shape)
+        )
+        rule = (
+            "no sampled sign change found; choose the round-vertex curve with "
+            "the smallest sampled absolute margin"
+        )
+    return TransitionSelection(
+        round_index=round_index,
+        local_vertex=local_vertex,
+        maximum_sampled_sign_changes=maximum_changes,
+        selected_sampled_sign_changes=int(sign_changes[round_index, local_vertex]),
+        rule=rule,
+    )
+
+
 def generate_base_instances(
     count: int,
     n: int,
@@ -180,12 +253,19 @@ def write_csv(path: Path, fieldnames: list[str], rows: list[dict[str, object]]) 
         writer.writerows(rows)
 
 
-def summarize_runs(rows: list[dict[str, object]]) -> list[dict[str, float]]:
-    result: list[dict[str, float]] = []
+def summarize_runs(rows: list[dict[str, object]]) -> list[dict[str, object]]:
+    result: list[dict[str, object]] = []
     horizons = sorted({int(row["horizon"]) for row in rows})
     for horizon in horizons:
         selected = [row for row in rows if int(row["horizon"]) == horizon]
-        entry: dict[str, float] = {"horizon": float(horizon), "runs": float(len(selected))}
+        entry: dict[str, object] = {
+            "horizon": horizon,
+            "runs": len(selected),
+            "ci_level": 0.95,
+            "ci_method": CI_METHOD,
+            "ci_conditioning": CI_CONDITIONING,
+            "ci_randomness": CI_RANDOMNESS,
+        }
         for key in ("grid_regret", "dense_proxy_regret", "proxy_grid_gap"):
             values = np.asarray([float(row[key]) for row in selected])
             standard_error = float(np.std(values, ddof=1) / math.sqrt(values.size)) if values.size > 1 else 0.0
@@ -199,20 +279,24 @@ def save_figure(figure: plt.Figure, output_base: Path) -> None:
     """Write matching vector and raster copies of a figure."""
 
     output_base.parent.mkdir(parents=True, exist_ok=True)
-    figure.savefig(output_base.with_suffix(".pdf"), bbox_inches="tight")
+    figure.savefig(
+        output_base.with_suffix(".pdf"),
+        bbox_inches="tight",
+        metadata={
+            "Creator": "sharp-root-anticoncentration artifact",
+            "CreationDate": None,
+            "ModDate": None,
+        },
+    )
     figure.savefig(output_base.with_suffix(".png"), dpi=240, bbox_inches="tight")
 
 
-def plot_regret(summary: list[dict[str, float]], output_base: Path) -> None:
+def plot_regret(summary: list[dict[str, object]], output_base: Path) -> None:
     horizons = np.asarray([row["horizon"] for row in summary])
-    fig, axes = plt.subplots(1, 2, figsize=(9.0, 3.5))
+    fig, axes = plt.subplots(1, 2, figsize=(10.0, 3.8))
     styles = (
-        ("grid_regret", "Algorithm-grid regret (exact)", "o"),
-        (
-            "dense_proxy_regret",
-            "Finite-union proxy regret",
-            "s",
-        ),
+        ("grid_regret", GRID_REGRET_LABEL, "o"),
+        ("dense_proxy_regret", DENSE_PROXY_LABEL, "s"),
     )
     for key, label, marker in styles:
         mean = np.asarray([row[f"mean_{key}"] for row in summary])
@@ -232,7 +316,7 @@ def plot_regret(summary: list[dict[str, float]], output_base: Path) -> None:
     axes[1].set_ylabel(r"Mean regret$/\sqrt{T}$")
     for axis in axes:
         axis.grid(axis="y", color="0.88", linewidth=0.7)
-        axis.legend(frameon=False, fontsize=8)
+        axis.legend(frameon=False, fontsize=7.4)
     fig.tight_layout()
     save_figure(fig, output_base)
     plt.close(fig)
@@ -250,30 +334,13 @@ def write_transition_outputs(
     distance_cap: float,
     labeled_count: int,
     bandwidth_cap: float,
+    reference_horizon: int,
+    reference_repetition: int,
 ) -> None:
     margins = (c_fn + c_fp)[:, None, None] * dense_scores - c_fp[:, None, None]
-    sign_changes = np.sum(margins[:, :-1, :] * margins[:, 1:, :] < 0.0, axis=1)
-    maximum_changes = int(np.max(sign_changes))
-    if maximum_changes > 0:
-        midpoint = 0.5 * (gammas[0] + gammas[-1])
-        candidates = np.argwhere(sign_changes == maximum_changes)
-
-        def centrality(candidate: np.ndarray) -> float:
-            t, vertex = (int(candidate[0]), int(candidate[1]))
-            changes = np.flatnonzero(
-                margins[t, :-1, vertex] * margins[t, 1:, vertex] < 0.0
-            )
-            approximate_crossings = 0.5 * (gammas[changes] + gammas[changes + 1])
-            return float(np.min(np.abs(approximate_crossings - midpoint)))
-
-        round_index, local_vertex = map(
-            int,
-            min(candidates, key=centrality),
-        )
-    else:
-        closest = np.min(np.abs(margins), axis=1)
-        flat_index = int(np.argmin(closest))
-        round_index, local_vertex = np.unravel_index(flat_index, closest.shape)
+    selection = select_illustrative_transition(margins, gammas)
+    round_index = selection.round_index
+    local_vertex = selection.local_vertex
 
     instance = instances[round_index]
     global_vertex = int(instance.unlabeled[local_vertex])
@@ -372,15 +439,20 @@ def write_transition_outputs(
 
     diagnostic_rows = [
         {
-            "reference_horizon": len(instances),
-            "reference_repetition": 0,
+            "reference_horizon": reference_horizon,
+            "reference_repetition": reference_repetition,
             "round": round_index,
             "vertex": global_vertex,
-            "selection_rule": (
-                "maximize dense-grid sign changes; break ties by central crossing"
-            ),
+            "curve_role": "illustrative, not statistically representative",
+            "selection_scope": "all round-vertex curves in the reference run",
+            "selection_rule": selection.rule,
             "dense_grid_points": gammas.size,
-            "dense_grid_sign_changes": int(sign_changes[round_index, local_vertex]),
+            "dense_grid_spacing": float(gammas[1] - gammas[0]),
+            "maximum_sampled_sign_changes": selection.maximum_sampled_sign_changes,
+            "selected_sampled_sign_changes": selection.selected_sampled_sign_changes,
+            "transition_location_method": TRANSITION_LOCATION_METHOD,
+            "transition_location_tolerance": "margin <= 1e-12 or bracket width <= 1e-10",
+            "numerically_isolated_transition_count": len(crossing_gammas),
             "numerically_isolated_crossings": ";".join(map(str, crossing_gammas)),
             "max_abs_score_derivative": float(np.max(np.abs(derivative))),
             "theoretical_derivative_bound": float(derivative_bound),
@@ -389,6 +461,8 @@ def write_transition_outputs(
             ),
             "max_cube_incidence_speed": float(np.max(incidence)),
             "cost_threshold": float(threshold),
+            "false_negative_cost": float(c_fn[round_index]),
+            "false_positive_cost": float(c_fp[round_index]),
         }
     ]
     write_csv(
@@ -403,7 +477,7 @@ def write_transition_outputs(
             s=28,
             color="black",
             zorder=4,
-            label="Numerically isolated transition",
+            label="Numerically isolated prediction transition",
         )
     axis.set_xlabel(r"Inverse bandwidth $\gamma$")
     axis.set_ylabel("Harmonic score")
@@ -428,18 +502,20 @@ def write_transition_outputs(
             chosen_rounds.append(value)
         if len(chosen_rounds) == min(4, len(instances)):
             break
-    illustrative_rounds = np.asarray(sorted(chosen_rounds), dtype=int)
+    illustrative_rounds = np.asarray(chosen_rounds, dtype=int)
     utility_selection_rows = [
         {
-            "reference_horizon": len(instances),
-            "reference_repetition": 0,
+            "reference_horizon": reference_horizon,
+            "reference_repetition": reference_repetition,
             "round": int(t),
+            "selection_rank": rank,
+            "curve_role": "illustrative, not statistically representative",
             "dense_grid_utility_changes": int(utility_change_counts[t]),
             "selection_rule": (
                 "include transition round, then largest dense-grid utility-change counts"
             ),
         }
-        for t in illustrative_rounds
+        for rank, t in enumerate(illustrative_rounds, start=1)
     ]
     write_csv(
         results_dir / "utility_selection.csv",
@@ -600,7 +676,7 @@ def main() -> None:
                 trace_rows = [
                     {
                         "reference_horizon": maximum_horizon,
-                        "repetition": 0,
+                        "reference_repetition": 0,
                         "round": t,
                         "action_index": selected_indices[t],
                         "gamma": selected_gammas[t],
@@ -631,10 +707,13 @@ def main() -> None:
         args.D,
         args.labeled,
         args.B,
+        maximum_horizon,
+        0,
     )
 
     configuration_rows = [
         {"parameter": "horizons", "value": ";".join(map(str, args.horizons))},
+        {"parameter": "maximum_horizon", "value": maximum_horizon},
         {"parameter": "n", "value": args.n},
         {"parameter": "ell", "value": args.labeled},
         {"parameter": "B", "value": args.B},
@@ -645,20 +724,55 @@ def main() -> None:
         {"parameter": "kappa_uniform_cost", "value": args.R ** -2},
         {"parameter": "A", "value": 4.0},
         {"parameter": "dense_points", "value": args.dense_points},
-        {"parameter": "repetitions", "value": args.repetitions},
         {
-            "parameter": "confidence_interval",
-            "value": "pointwise normal approximation: mean +/- 1.96 sample SE",
+            "parameter": "dense_grid_definition",
+            "value": "uniform grid of dense_points values on [0,B]",
         },
         {
-            "parameter": "replication_scope",
-            "value": "fixed base sequence; resampled costs and Hedge actions",
+            "parameter": "algorithm_mesh_rule",
+            "value": "h=T^(-1/2), constructed separately for each horizon",
+        },
+        {
+            "parameter": "dense_proxy_definition",
+            "value": (
+                "finite union of the uniform dense evaluation grid and that "
+                "horizon's algorithm grid"
+            ),
+        },
+        {"parameter": "repetitions", "value": args.repetitions},
+        {"parameter": "ci_level", "value": 0.95},
+        {
+            "parameter": "ci_method",
+            "value": CI_METHOD,
+        },
+        {
+            "parameter": "ci_conditioning",
+            "value": CI_CONDITIONING,
+        },
+        {
+            "parameter": "ci_randomness",
+            "value": CI_RANDOMNESS,
+        },
+        {
+            "parameter": "cost_distribution",
+            "value": "independent Uniform([0,R]^2) pairs across rounds and repetitions",
         },
         {"parameter": "base_seed", "value": args.base_seed},
         {"parameter": "cost_seed", "value": args.cost_seed},
         {"parameter": "hedge_seed", "value": args.hedge_seed},
-        {"parameter": "illustration_horizon", "value": maximum_horizon},
-        {"parameter": "illustration_repetition", "value": 0},
+        {"parameter": "illustrative_reference_horizon", "value": maximum_horizon},
+        {"parameter": "illustrative_reference_repetition", "value": 0},
+        {
+            "parameter": "illustrative_transition_selection",
+            "value": (
+                "maximize sampled sign changes across all round-vertex curves; "
+                "tie-break by central crossing, then indices"
+            ),
+        },
+        {
+            "parameter": "transition_location_method",
+            "value": TRANSITION_LOCATION_METHOD,
+        },
     ]
     write_csv(results_dir / "configuration.csv", ["parameter", "value"], configuration_rows)
     print(f"Wrote figures to {figures_dir}")

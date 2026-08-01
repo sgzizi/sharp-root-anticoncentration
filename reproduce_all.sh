@@ -3,6 +3,7 @@ set -euo pipefail
 
 ARTIFACT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ARTIFACT_DIR"
+export PYTHONPATH="$ARTIFACT_DIR/src${PYTHONPATH:+:$PYTHONPATH}"
 
 python -m pytest
 python experiments/dimension_free.py

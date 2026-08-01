@@ -23,7 +23,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from sharp_root_ac.common_offset import (
+    evaluate_polynomial,
     normalized_subleading_curve,
+    shift_coefficients,
     translate_roots,
 )
 
@@ -34,6 +36,27 @@ FIXTURE_ROOTS = np.array([-2.0, 0.5, 1.5], dtype=float)
 # curved even over the modest offset range used below.
 FIXTURE_COEFFICIENTS = np.array([1.5, -3.25, 0.0, 1.0], dtype=float)
 DISPLAYED_ROOT_INDEX = 1
+
+
+def verify_fixture(eta: float) -> None:
+    """Validate the fixture's shift and root-translation identities."""
+
+    evaluation_points = np.linspace(-3.0, 3.0, 17)
+    for offset in np.linspace(-eta, eta, 5):
+        shifted = shift_coefficients(FIXTURE_COEFFICIENTS, float(offset))
+        np.testing.assert_allclose(
+            evaluate_polynomial(shifted, evaluation_points),
+            evaluate_polynomial(FIXTURE_COEFFICIENTS, evaluation_points + offset),
+            rtol=2e-14,
+            atol=2e-14,
+        )
+        translated = translate_roots(FIXTURE_ROOTS, float(offset))
+        np.testing.assert_allclose(
+            evaluate_polynomial(shifted, translated),
+            0.0,
+            rtol=0.0,
+            atol=2e-14,
+        )
 
 
 def build_figure(
@@ -136,15 +159,7 @@ def build_figure(
         axis.spines["top"].set_visible(False)
         axis.spines["right"].set_visible(False)
 
-    figure.subplots_adjust(left=0.09, right=0.985, top=0.88, bottom=0.22, wspace=0.30)
-    figure.text(
-        0.5,
-        0.055,
-        "Exact one-scalar parameterization (illustration).",
-        ha="center",
-        fontsize=8.5,
-        color=gray,
-    )
+    figure.subplots_adjust(left=0.09, right=0.985, top=0.88, bottom=0.17, wspace=0.30)
     return figure
 
 
@@ -168,11 +183,20 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
+    verify_fixture(args.eta)
     figure = build_figure(samples=args.samples, eta=args.eta, seed=args.seed)
     args.figures_dir.mkdir(parents=True, exist_ok=True)
     args.results_dir.mkdir(parents=True, exist_ok=True)
     figure_base = args.figures_dir / "common_offset_demo"
-    figure.savefig(figure_base.with_suffix(".pdf"), bbox_inches="tight")
+    figure.savefig(
+        figure_base.with_suffix(".pdf"),
+        bbox_inches="tight",
+        metadata={
+            "Creator": "sharp-root-anticoncentration artifact",
+            "CreationDate": None,
+            "ModDate": None,
+        },
+    )
     figure.savefig(figure_base.with_suffix(".png"), dpi=240, bbox_inches="tight")
     plt.close(figure)
 
@@ -194,6 +218,8 @@ def main() -> None:
                 ("displayed_root", FIXTURE_ROOTS[DISPLAYED_ROOT_INDEX]),
                 ("eta", args.eta),
                 ("exact_root_density", 1.0 / (2.0 * args.eta)),
+                ("identity_check_offsets", 5),
+                ("identity_check_grid_points", 17),
                 ("samples", args.samples),
                 ("seed", args.seed),
             ]

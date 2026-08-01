@@ -1,5 +1,6 @@
 parameter,value
 horizons,100;200;500;1000
+maximum_horizon,1000
 n,20
 ell,5
 B,3.0
@@ -10,11 +11,19 @@ cluster_noise,0.75
 kappa_uniform_cost,1.0
 A,4.0
 dense_points,401
+dense_grid_definition,"uniform grid of dense_points values on [0,B]"
+algorithm_mesh_rule,"h=T^(-1/2), constructed separately for each horizon"
+dense_proxy_definition,finite union of the uniform dense evaluation grid and that horizon's algorithm grid
 repetitions,30
-confidence_interval,pointwise normal approximation: mean +/- 1.96 sample SE
-replication_scope,fixed base sequence; resampled costs and Hedge actions
+ci_level,0.95
+ci_method,pointwise normal approximation: mean +/- 1.96 sample standard errors
+ci_conditioning,conditional on the fixed oblivious base-instance sequence
+ci_randomness,independent cost pairs and Hedge actions
+cost_distribution,"independent Uniform([0,R]^2) pairs across rounds and repetitions"
 base_seed,20260801
 cost_seed,314159
 hedge_seed,271828
-illustration_horizon,1000
-illustration_repetition,0
+illustrative_reference_horizon,1000
+illustrative_reference_repetition,0
+illustrative_transition_selection,"maximize sampled sign changes across all round-vertex curves; tie-break by central crossing, then indices"
+transition_location_method,bisection of the harmonic margin within adjacent dense-grid sign-change brackets

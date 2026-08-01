@@ -10,8 +10,15 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 authors = [
-  {name = "Zijun Wang"},
-  {name = "Yuchen Miao"},
+  {name = "Zijun Wang", email = "wangzj@mails.neu.edu.cn"},
+  {name = "Yuchen Miao", email = "miaoyc@mails.neu.edu.cn"},
+]
+keywords = [
+  "anti-concentration",
+  "online learning",
+  "random polynomials",
+  "graph learning",
+  "reproducible research",
 ]
 dependencies = [
   "numpy>=1.24",
@@ -20,6 +27,7 @@ dependencies = [
 
 [project.urls]
 Repository = "https://github.com/sgzizi/sharp-root-anticoncentration"
+Issues = "https://github.com/sgzizi/sharp-root-anticoncentration/issues"
 
 [project.optional-dependencies]
 test = ["pytest>=8"]
