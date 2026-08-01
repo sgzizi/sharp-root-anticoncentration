@@ -1,0 +1,5 @@
+reference_horizon,reference_repetition,round,dense_grid_utility_changes,selection_rule
+1000,0,284,14,"include transition round, then largest dense-grid utility-change counts"
+1000,0,327,14,"include transition round, then largest dense-grid utility-change counts"
+1000,0,519,9,"include transition round, then largest dense-grid utility-change counts"
+1000,0,978,15,"include transition round, then largest dense-grid utility-change counts"

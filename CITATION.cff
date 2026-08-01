@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use this artifact, please cite the accompanying paper."
+title: "Sharp Root Anti-Concentration: Reproducibility Artifact"
+type: software
+version: 0.1.0
+date-released: 2026-08-01
+authors:
+  - family-names: Wang
+    given-names: Zijun
+  - family-names: Miao
+    given-names: Yuchen
+license: MIT
+repository-code: "https://github.com/sgzizi/sharp-root-anticoncentration"

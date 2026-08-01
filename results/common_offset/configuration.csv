@@ -1,0 +1,7 @@
+parameter,value
+fixture_roots,-2.0;0.5;1.5
+displayed_root,0.5
+eta,0.25
+exact_root_density,2.0
+samples,50000
+seed,17
