@@ -12,6 +12,8 @@ license = "MIT"
 authors = [
   {name = "Zijun Wang", email = "wangzj@mails.neu.edu.cn"},
   {name = "Yuchen Miao", email = "miaoyc@mails.neu.edu.cn"},
+  {name = "Yifan Hu", email = "23251317@bjtu.edu.cn"},
+  {name = "Huanmin Liu", email = "202305133221@smail.xtu.edu.cn"},
 ]
 keywords = [
   "anti-concentration",

@@ -2,7 +2,7 @@
 
 [![tests](https://github.com/sgzizi/sharp-root-anticoncentration/actions/workflows/tests.yml/badge.svg)](https://github.com/sgzizi/sharp-root-anticoncentration/actions/workflows/tests.yml) [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776AB.svg)](https://www.python.org/) [![MIT License](https://img.shields.io/badge/license-MIT-2E8B57.svg)](LICENSE)
 
-Reproducibility artifact for *Sharp Root Anti-Concentration via Projective Incidence and Ordered Root Laws* by Zijun Wang and Yuchen Miao. The paper's results are analytic; this repository provides executable identity checks and seeded illustrations of the geometric and learning-theoretic mechanisms.
+Reproducibility artifact for *Sharp Root Anti-Concentration via Projective Incidence and Ordered Root Laws* by Zijun Wang, Yuchen Miao, Yifan Hu, and Huanmin Liu. The paper's results are analytic; this repository provides executable identity checks and seeded illustrations of the geometric and learning-theoretic mechanisms.
 
 **After the one-time setup below, one command reproduces every test, figure, and table:**
 

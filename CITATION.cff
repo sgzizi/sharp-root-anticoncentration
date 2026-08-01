@@ -13,6 +13,14 @@ authors:
     given-names: Yuchen
     affiliation: Northeastern University, China
     email: miaoyc@mails.neu.edu.cn
+  - family-names: Hu
+    given-names: Yifan
+    affiliation: Beijing Jiaotong University, China
+    email: 23251317@bjtu.edu.cn
+  - family-names: Liu
+    given-names: Huanmin
+    affiliation: Xiangtan University, China
+    email: 202305133221@smail.xtu.edu.cn
 keywords:
   - anti-concentration
   - online learning
@@ -29,4 +37,8 @@ preferred-citation:
       given-names: Zijun
     - family-names: Miao
       given-names: Yuchen
+    - family-names: Hu
+      given-names: Yifan
+    - family-names: Liu
+      given-names: Huanmin
   year: 2026
