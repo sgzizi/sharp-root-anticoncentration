@@ -147,3 +147,4 @@ def dense_proxy_regret(dense_utilities: Array, learner_rewards: Array) -> float:
     if reward_matrix.ndim != 2 or received.shape != (reward_matrix.shape[0],):
         raise ValueError("dense_utilities and learner_rewards have incompatible shapes")
     return float(np.max(np.sum(reward_matrix, axis=0)) - np.sum(received))
+# Maintenance annotation; functional content is unchanged.

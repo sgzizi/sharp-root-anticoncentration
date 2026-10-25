@@ -27,3 +27,4 @@ jobs:
           python experiments/dimension_free.py --samples 1000 --figures-dir /tmp/figures --results-dir /tmp/results
           python experiments/rbf_graph_ssl.py --horizons 4,8 --repetitions 1 --dense-points 21 --n 8 --labeled 2 --figures-dir /tmp/figures/rbf --results-dir /tmp/results/rbf
           python experiments/common_offset_demo.py --samples 1000 --figures-dir /tmp/figures --results-dir /tmp/results/common
+# Maintenance annotation; functional content is unchanged.

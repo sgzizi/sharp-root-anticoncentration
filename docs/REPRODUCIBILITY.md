@@ -147,3 +147,4 @@ The test suite checks:
 
 Continuous integration runs the tests and reduced-size smoke versions of all
 three experiments under Python 3.10 and Python 3.12.
+<!-- Maintenance annotation; functional content is unchanged. -->

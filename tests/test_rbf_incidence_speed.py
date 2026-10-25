@@ -49,3 +49,4 @@ def test_raw_section_integral_scales_quadratically_with_radius():
 def test_invalid_rbf_inputs_are_rejected(call):
     with pytest.raises((TypeError, ValueError)):
         call()
+# Maintenance annotation; functional content is unchanged.

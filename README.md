@@ -107,3 +107,4 @@ Citation metadata are provided in [`CITATION.cff`](CITATION.cff) and are also av
 ## License
 
 Released under the [MIT License](LICENSE).
+<!-- Maintenance annotation; functional content is unchanged. -->

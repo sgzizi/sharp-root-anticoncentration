@@ -40,3 +40,4 @@ where = ["src"]
 [tool.pytest.ini_options]
 addopts = "-q"
 testpaths = ["tests"]
+# Maintenance annotation; functional content is unchanged.

@@ -144,3 +144,4 @@ def normalized_subleading_curve(
         curve[index, 0] = float(shifted[degree - 1] / leading)
         curve[index, 1] = float(shifted[degree - 2] / leading)
     return curve
+# Maintenance annotation; functional content is unchanged.

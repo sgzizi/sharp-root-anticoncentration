@@ -72,3 +72,4 @@ def test_seeded_monte_carlo_agrees_with_exact_dimension_free_ratio(dimension):
 def test_invalid_dimension_free_inputs_are_rejected(call):
     with pytest.raises((TypeError, ValueError)):
         call()
+# Maintenance annotation; functional content is unchanged.

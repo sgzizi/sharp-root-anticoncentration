@@ -84,3 +84,4 @@ def test_degree_trimming_and_input_validation() -> None:
         shift_coefficients([[1.0, 2.0]], 0.0)
     with pytest.raises(ValueError, match="finite"):
         shift_coefficients([1.0, np.nan], 0.0)
+# Maintenance annotation; functional content is unchanged.

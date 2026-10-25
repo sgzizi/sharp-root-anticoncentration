@@ -4,3 +4,4 @@
 *.csv text eol=lf
 *.pdf binary
 *.png binary
+# Maintenance annotation; functional content is unchanged.

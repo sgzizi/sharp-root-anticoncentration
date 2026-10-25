@@ -203,3 +203,4 @@ def cube_incidence_speed(scores: Array, score_derivative: Array) -> Array:
         raise ValueError("scores and derivatives must have the same shape")
     denominator = 4.0 * np.maximum(s, 1.0 - s) ** 2
     return np.abs(s_prime) / denominator
+# Maintenance annotation; functional content is unchanged.

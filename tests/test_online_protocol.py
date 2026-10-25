@@ -83,3 +83,4 @@ def test_exact_grid_and_dense_proxy_regret_are_distinct_quantities() -> None:
 
     proxy_utilities = np.array([[1.0, 0.5, 0.0], [0.0, 0.8, 1.0]])
     assert dense_proxy_regret(proxy_utilities, learner_rewards) == pytest.approx(0.3)
+# Maintenance annotation; functional content is unchanged.

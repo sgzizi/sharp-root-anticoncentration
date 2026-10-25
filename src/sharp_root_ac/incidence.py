@@ -262,3 +262,4 @@ __all__ = [
     "rbf_cube_section_integral_numeric",
     "wilson_score_interval",
 ]
+# Maintenance annotation; functional content is unchanged.

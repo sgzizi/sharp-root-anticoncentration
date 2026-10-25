@@ -70,3 +70,4 @@ def test_regret_summary_records_ci_interpretation() -> None:
     assert summary[0]["ci_method"] == CI_METHOD
     assert summary[0]["ci_conditioning"] == CI_CONDITIONING
     assert summary[0]["ci_randomness"] == CI_RANDOMNESS
+# Maintenance annotation; functional content is unchanged.

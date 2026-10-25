@@ -86,3 +86,4 @@ def test_two_dimensional_cube_incidence_formula() -> None:
     actual = cube_incidence_speed(scores, derivative)
     assert np.allclose(actual, expected)
     assert np.all(actual <= np.abs(derivative) + 1e-15)
+# Maintenance annotation; functional content is unchanged.
